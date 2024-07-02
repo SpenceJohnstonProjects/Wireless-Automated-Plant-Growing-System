@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Device</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="./style.css">
+
+    </head>
+    <body>
+        <!--Toolbar-->
+        <div class="topnav">
+            <a href="./index.html">                   Home</a>
+            <a class="active" href="#./device.html">   Devices</a>
+            <a href="./profile.html">                 Profiles</a>
+            <a href="./setting.html">                Settings</a>
+        </div>
+        <br>
+        <div>
+            <!--
+            <table>
+                <tr>
+                    <td id="powerNumb">Total power hub(s):</td>
+                    <td id="sensorNumb">Total sensor hub(s):</td>
+                    <td><button id="discover">Discover</button></td>
+                </tr>
+            </table>
+            <br>
+            -->
+            <table>
+                <tr>
+                    <td>
+                        <label for="hubType">Hub type:</label>
+                        <select name="hubType" id="hubType">
+                            <option value="sensor">Sensor</option>
+                            <option value="power">Power</option>
+                        </select>
+                        <!--<label for="hubNumb">Device Number:</label>
+                        <select name="hubNumb" id="hubNumb"></select>
+                    </td>-->
+                    <!--<td>
+                        <button id="blink">Blink</button>
+                    </td>-->
+                </tr>
+                <tr>
+                    <td>
+                        <label for="deviceName">Device name:</label>
+                        <input type="text" minlength="1" maxlength="48" id="deviceName" name="deviceName" value="Power_Hub">
+                    </td>
+                    <td>
+                        <button id="changeName">Change</button>
+                    </td>
+            </table>
+            <br>
+            <div id="powerSettings">
+                <table>
+                    <tr>
+                        <td>
+                            <label for="port0">Port 0: </label>
+                            <select name="port0" id="port0">
+                                <option value="none">None</option>
+                                <option value="fan">Fan</option>
+                                <option value="pump">Pump</option>
+                                <option value="light">Light</option>
+                            </select> 
+                        </td>
+                        <td>
+                            <button id="changeP0">Change</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="port1">Port 1: </label>
+                            <select name="port1" id="port1">
+                                <option value="none">None</option>
+                                <option value="fan">Fan</option>
+                                <option value="pump">Pump</option>
+                                <option value="light">Light</option>
+                            </select> 
+                        </td>
+                        <td>
+                            <button id="changeP1">Change</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="port2">Port 2: </label>
+                            <select name="port2" id="port2">
+                                <option value="none">None</option>
+                                <option value="fan">Fan</option>
+                                <option value="pump">Pump</option>
+                                <option value="light">Light</option>
+                            </select> 
+                        </td>
+                        <td>
+                            <button id="changeP2">Change</button>
+                        </td>
+                    </tr>
+                </table>
+                <br>
+            </div>
+
+            <div id="sensorSettings">
+                <table>
+                    <tr>
+                        <td>Calibrate soil moisture sensor</td>
+                        <td>
+                            <button id="calibrateSoil">Calibrate</button>
+                        </td>
+                    </tr>
+                    <tr id="sensorCalibration">
+                        <td>Place soil moisture sensor in fully saturated soil for 1-5 minutes then</td>
+                        <td><button id="calibrateBtn">click me</button></td>
+                    </tr>
+                    
+                    
+                </table>
+                <br>
+            </div>
+            
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                getName('s');
+                showSensorOptionUI();
+                getPortType(0);
+                getPortType(1);
+                getPortType(2);
+            });
+
+            document.getElementById("hubType").addEventListener("change", function() 
+            {
+                if(document.getElementById("hubType").value == "power")
+                {
+                    hideSensorOptionUI();
+                    showPowerOptionUI();
+                    getName('p');
+                }
+                else
+                {
+                    hidePowerOptionUI();
+                    showSensorOptionUI();
+                    getName('s');
+                }
+                document.getElementById("sensorCalibration").style.display = "none";
+                console.log("value of selection: " + document.getElementById("hubType").value);
+            });
+
+            function getName(sp)
+            {
+                requestStr = "g" + sp + "n";
+                console.log("Sending name request");
+                console.log("request: " + requestStr);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("get name command transmission successful.");
+                            document.getElementById("deviceName").value = xhr.responseText;
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                }
+                xhr.open('GET', ('/name/' + requestStr));
+                xhr.send();
+            }
+            
+            function changeName()
+            {
+                console.log("change name command sending");
+                var requestStr;
+                document.getElementById("deviceName").value = document.getElementById("deviceName").value.replace(/\\s/g, '_');
+                if(document.getElementById("hubType").value == "power")
+                {
+                    requestStr = "spn";
+                }
+                else
+                {
+                    requestStr = "ssn";
+                }
+                var requestStr = requestStr + document.getElementById("deviceName").value;
+                console.log("Request String: " + requestStr);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("name change command transmission successful.");
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                }
+                xhr.open('GET', ('/name/' + requestStr));
+                xhr.send();
+            }
+            document.getElementById("changeName").addEventListener("click", changeName);
+
+            function setCharAt(str, index, chr) {
+            if (index > str.length - 1) return str;
+            return str.substring(0, index) + chr + str.substring(index + 1);
+            }
+
+            function hidePowerOptionUI()
+            {
+                document.getElementById("powerSettings").style.display = "none";
+            }
+            
+            function hideSensorOptionUI()
+            {
+                document.getElementById("sensorSettings").style.display = "none";
+            }
+
+            function showPowerOptionUI()
+            {
+                document.getElementById("powerSettings").style.display = "inline";
+            }
+            function showSensorOptionUI()
+            {
+                document.getElementById("sensorSettings").style.display = "inline";
+            }
+
+            function getPortType(i)
+            {
+                var requestStr = "n" + i + "g";
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log('power device port ' + i + ' type: ' + xhr.responseText);
+                            switch( xhr.responseText )
+                            {
+                                case 'f':
+                                    document.getElementById('port' + i).value = 'fan';
+                                break;
+                                case 'l':
+                                    document.getElementById('port' + i).value = 'light';
+                                break;
+                                case 'p':
+                                    document.getElementById('port' + i).value = 'pump';
+                                break;
+                                case 'n':
+                                    document.getElementById('port' + i).value = 'none';
+                                break;
+                                default:
+                                    document.getElementById('port' + i).value = 'error';
+                            }
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', ('/portType/' + requestStr));
+                xhr.send();
+            }
+
+            document.getElementById("changeP0").addEventListener("click", function() 
+            {
+                requestStr = "n" + "0" + 's' + document.getElementById("port0").value[0];
+
+                console.log("Request String: " + requestStr);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("port change transmission successful.");
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status); 
+                        }
+                    }
+                }
+                xhr.open('GET', ('/portType/' + requestStr));
+                xhr.send();
+            });
+
+            document.getElementById("changeP1").addEventListener("click", function() 
+            {
+                requestStr = "n" + "1" + 's' + document.getElementById("port1").value[0];
+
+                console.log("Request String: " + requestStr);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("port change transmission successful.");
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status); 
+                        }
+                    }
+                }
+                xhr.open('GET', ('/portType/' + requestStr));
+                xhr.send();
+            });
+
+            document.getElementById("changeP2").addEventListener("click", function() 
+            {
+                requestStr = "n" + "2" + 's' + document.getElementById("port2").value[0];
+
+                console.log("Request String: " + requestStr);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("port change transmission successful.");
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status); 
+                        }
+                    }
+                }
+                xhr.open('GET', ('/portType/' + requestStr));
+                xhr.send();
+            });
+
+            document.getElementById("calibrateSoil").addEventListener("click", showCalibration);
+
+            function showCalibration()
+            {
+                document.getElementById("sensorCalibration").style.display = "inline";
+            }
+
+            document.getElementById("calibrateBtn").addEventListener("click", setMoistMax);
+
+            function setMoistMax()
+            {
+                getCurrentsMoist(function(response){
+                    if(response != null)
+                    {
+                        ///soilMax/xn
+                        var requestStr ="/soilMax/s" + response;
+                        var xhr = new XMLHttpRequest();
+                        xhr.onreadystatechange = function() {
+                            if (xhr.readyState === XMLHttpRequest.DONE) {
+                                if (xhr.status === 200) {
+                                    console.log('max soil moisture value is ' + response);
+                                } else {
+                                    console.log('AJAX request failed with status ' + xhr.status);
+                                }
+                            }
+                        };
+                        xhr.open('GET', requestStr);
+                        xhr.send();
+                    }
+                });
+            }
+
+            function getCurrentsMoist(callback)
+            {
+                var requestStr = "/info/sn2d";
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log('soil moisture value: ' + xhr.responseText);
+                            callback(xhr.responseText);
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                            callback(null);
+                        }
+                    }
+                };
+                xhr.open('GET', requestStr);
+                xhr.send();
+            }
+        </script>
+    </body>
+</html>

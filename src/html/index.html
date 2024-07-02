@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Home</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <!--Toolbar-->
+        <div class="topnav">
+            <a class="active" href="#./index.html"> Home</a>
+            <a href="./device.html">                Devices</a>
+            <a href="./profile.html">               Profiles</a>
+            <a href="./setting.html">               Settings</a>
+        </div>
+
+        <h1>Device Information</h1>
+        
+
+        <div>
+            <table style="float: left">
+                <tr>
+                    <td >Device Name:</td>
+                    <td id="deviceName0"></td>
+                </tr>
+                <tr>
+                    <td>Device Type:</td>
+                    <td id="deviceType">Sensor</td>
+                </tr>
+                <tr>
+                    <td id="deviceDataType00">Temperature (°C):</td>
+                    <td id="temperatureData"></td>
+                </tr>
+                <tr>
+                    <td id="deviceDataType01">Rel. Humidity (%):</td>
+                    <td id="humidityData"></td>
+                </tr>
+                <tr>
+                    <td id="deviceDataType02">Rel. Soil Moisture (%):</td>
+                    <td id="soilMoistData"></td>
+                </tr>
+            </table>
+            <table style="float: left">
+                <tr>
+                    <td >Device Name:</td>
+                    <td id="deviceName1"></td>
+                </tr>
+                <tr>
+                    <td>Device Type:</td>
+                    <td id="deviceType1">Power</td>
+                </tr>
+                <tr>
+                    <td id="deviceDataType0"></td>
+                    <td id="deviceData0"></td>
+                </tr>
+                <tr>
+                    <td id="deviceDataType1"></td>
+                    <td id="deviceData1"></td>
+                </tr>
+                <tr>
+                    <td id="deviceDataType2"></td>
+                    <td id="deviceData2"></td>
+                </tr>
+            </table>    
+        </div>
+
+        <script>
+            var portTypes = new Array(3);
+
+            document.addEventListener("DOMContentLoaded", function() {
+                updatePage();
+                setInterval(updatePage, 1000);
+            });
+
+            function updatePage()
+            {
+                
+                getDeviceName('s');
+                getSensorData(0);
+                getSensorData(1);
+                getSensorData(2);
+
+                getDeviceName('p');
+                getPortType(0);
+                getPortType(1);
+                getPortType(2);
+                updatePortLevel();
+            }
+
+            function updatePortLevel()
+            { 
+                getPowerTypeLevel('f'); //fan
+                getPowerTypeLevel('l'); //light
+                getPowerTypeLevel('p'); //pump
+                getPowerTypeLevel('n'); //none
+            }
+
+            //get a power level of a given type, update all ports of that type
+            function getPowerTypeLevel(type)
+            {
+                
+                var requestStr = 'p' + 'n' + type;
+                console.log('Request send:' + '/info/' + requestStr)
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log('power  port type' + type + ':' + xhr.responseText);
+                            for (let it = 0; it < 3; it++)
+                            {
+                                if(portTypes[it] == type)
+                                {
+                                    if(xhr.responseText == '0')
+                                    {
+                                        document.getElementById('deviceData' + it).innerHTML = 'Off';
+                                    }
+                                    else
+                                    {
+                                        document.getElementById('deviceData' + it).innerHTML = 'On';
+                                    }
+                                }
+                            }
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', ('/info/' + requestStr));
+                xhr.send();
+            }
+
+            function getSensorData(type)
+            {
+                var requestStr = 's' + 'n' + type;
+                console.log('Request send:' + '/info/' + requestStr);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                                console.log('sensor data type: ' + type + ' data: ' + xhr.responseText);
+                                switch(type)
+                                {
+                                    case 0://temp
+                                        document.getElementById('temperatureData').innerHTML = xhr.responseText;
+                                    break;
+                                    case 1: //hum
+                                        document.getElementById('humidityData').innerHTML = xhr.responseText;
+                                    break;
+                                    case 2: //soilmoist
+                                        document.getElementById('soilMoistData').innerHTML = xhr.responseText;
+                                    break;
+                                }
+                                
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', ('/info/' + requestStr));
+                xhr.send();
+            }
+
+            function getPortType(i)
+            {
+                var requestStr = 'n' + i + 'g';
+                console.log('Request send:' + '/portType/' + requestStr);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log('power device port ' + i + ' type: ' + xhr.responseText);
+                            portTypes[i] = xhr.responseText
+                            switch( xhr.responseText )
+                            {
+                                case 'f':
+                                    document.getElementById('deviceDataType' + i).innerHTML = 'Fan';
+                                break;
+                                case 'l':
+                                    document.getElementById('deviceDataType' + i).innerHTML = 'Light';
+                                break;
+                                case 'p':
+                                    document.getElementById('deviceDataType' + i).innerHTML = 'Pump';
+                                break;
+                                case 'n':
+                                    document.getElementById('deviceDataType' + i).innerHTML = 'None';
+                                break;
+                                default:
+                                    document.getElementById('deviceDataType' + i).innerHTML = 'Error';
+                            }
+                            
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', ('/portType/' + requestStr));
+                xhr.send();
+            }
+
+            function getDeviceName(sp)
+            {
+                var requestStr = 'g' + sp + 'n';
+                console.log('Request send:' + '/name/' + requestStr);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            if(sp == 'p')
+                            {
+                                console.log('power device name: ' + xhr.responseText);
+                                document.getElementById('deviceName1').innerHTML = xhr.responseText;
+                            }
+                            else
+                            {
+                                console.log('sensor device name: ' + xhr.responseText);
+                                document.getElementById('deviceName0').innerHTML = xhr.responseText;
+                            }
+                            
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', ('/name/' + requestStr));
+                xhr.send();
+            }
+
+            function setCharAt(str, index, chr) {
+                if (index > str.length - 1) return str;
+                return str.substring(0, index) + chr + str.substring(index + 1);
+            }
+        </script>
+    </body>
+</html>

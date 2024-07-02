@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Profile</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="./style.css">
+
+    </head>
+    <body>
+        <!--Toolbar-->
+        <div class="topnav">
+            <a href="./index.html">                     Home</a>
+            <a href="./device.html">                    Devices</a>
+            <a class="active" href="#./profile.html">   Profiles</a>
+            <a href="./setting.html">                   Settings</a>
+        </div>
+        <br>
+        <div>
+            <table>
+                <tr>
+                    <td>Primary Light Cycle:</td>
+                    <td>
+                        <label for="lightTimer_p">Duration (hr:min):<br></label>
+                        <!--<input type="time" id="lightTimer_p" name="lightTimer_p">-->
+
+                    </td>
+                    <td>
+                        <label for="startTime_p">Start time (hr:min):<br></label>
+                        <input type="time" id="startTime_p" name="startTime_p">
+                    </td>
+                    <td>
+                        <label for="lightDuration_p">Duration (days):<br></label>
+                        <input type="number" id="lightDuration_p" name="lightDuration_p" min="1" max="255">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Secondary Light Cycle:</td>
+                    <td>
+                        <label for="lightTimer_s">Duration (hr:min):<br></label>
+                        <input type="time" id="lightTimer_s" name="lightTimer_s">
+                    </td>
+                    <td>
+                        <label for="startTime_s">Start time (hr:min):<br></label>
+                        <input type="time" id="startTime_s" name="startTime_s">
+                    </td>
+                    <td>
+                        <label for="lightDuration_s">Duration (days):<br></label>
+                        <input type="number" id="lightDuration_s" name="lightDuration_s" min="1" max="255">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Fan Threshold:&ensp;</td>
+                    <td>
+                        <label for="humidityThreshold">Humidity threshold (%):<br></label>
+                        <input type="number" id="humidityThreshold" name="humidityThreshold" min="0" max="100">
+                    </td>
+                    <td>
+                        <label for="tempThreshold">Temperature threshold (°C):<br></label>
+                        <input type="number" id="tempThreshold" name="tempThreshold" min="0" max="45">
+                    </td>
+
+                </tr>
+                <tr>
+                    <td>Pump Threshold:&ensp;</td>
+                    <td>
+                        <label for="soilMoistThreshold">Soil moisture threshold (%):<br></label>
+                        <input type="number" id="soilMoistThreshold" name="soilMoistThreshold" min="0" max="100">
+                    </td>
+                </tr>
+            </table>
+            <button id="submitChanges">Submit changes</button>
+        </div>
+
+        <script>
+            var profileData = new Array(8);
+            document.addEventListener("DOMContentLoaded", function() {
+
+                function handleResponse(i) {
+                    return function() {
+                        console.log('Request for index ' + i + ' completed');
+                        var element = getIdFromInd(i);
+                        element.value = profileData[i];
+                    };
+                }
+
+                for (let i = 0; i < 9; i++) {
+                    getProfileValue(i, handleResponse(i));
+                }
+            });
+
+            function getProfileValue(i, callback) {
+                var requestStr = "xng";
+                requestStr = setCharAt(requestStr, 1, i);
+                
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log('Return str for index ' + i + ': ' + xhr.responseText);
+                            profileData[i] = xhr.responseText;
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                        callback();
+                    }
+                };
+                xhr.open('GET', ('/profile/' + requestStr));
+                xhr.send();
+            }
+
+            function setProfileValue(i, value)
+            {
+                var requestStr = "xns";
+                requestStr = setCharAt(requestStr, 1, i);
+                
+                requestStr = requestStr + value;
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log('update successful');
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                };
+                xhr.open('GET', ('/profile/' + requestStr));
+                xhr.send();
+            }
+            
+            function setCharAt(str, index, chr) {
+                if (index > str.length - 1) return str;
+                return str.substring(0, index) + chr + str.substring(index + 1);
+            }
+
+            function getIdFromInd(i) {
+                switch(i)
+                {
+                    case 0:
+                        return document.getElementById("lightTimer_p");
+                        break;
+                    case 1:
+                        return document.getElementById("startTime_p");
+                        break;
+                    case 2:
+                        return document.getElementById("lightDuration_p");
+                        break;
+                    case 3:
+                        return document.getElementById("lightTimer_s");
+                        break;
+                    case 4:
+                        return document.getElementById("startTime_s");
+                        break;
+                    case 5:
+                        return document.getElementById("lightDuration_s");
+                        break;
+                    case 6:
+                        return document.getElementById("humidityThreshold");
+                        break;
+                    case 7:
+                        return document.getElementById("tempThreshold");
+                        break;
+                    case 8:
+                        return document.getElementById("soilMoistThreshold");
+                        break;
+                    default:
+                        console.log("getIdFromInd: Index out of range");
+                }
+            }
+            
+            document.getElementById("submitChanges").addEventListener("click", function () {
+                console.log("checking elements for changes");
+                var element;
+                for(let i = 0; i < 9; i++)
+                {
+                    element = getIdFromInd(i);
+                    if (element.value !== profileData[i])
+                    {
+                        console.log("Element " + i + " does not match");
+                        profileData[i] = element.value;
+                        setProfileValue(i, profileData[i]);
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Settings</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <!--Toolbar-->
+        <div class="topnav">
+            <a href="./index.html">                   Home</a>
+            <a href="./device.html">                  Devices</a>
+            <a href="./profile.html">                 Profiles</a>
+            <a class="active" href="#./setting.html">Settings</a>
+        </div>
+        <br>
+        <label for="systemDay">Current Day:</label>
+        <input type="number" id="systemDay" name="systemDay" value="0" readonly>
+        <button id="reset">Reset</button>
+
+        <br>
+        <label for="systemTime">System time:</label>
+        <input type="time" id="systemTime" name="systemTime" value="01:00">
+        <button id="changeTime">Change</button>
+        <br>
+        
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                getLocalTime();
+                getDay();
+            });
+
+            function getDay()
+            {
+                console.log("Sending get day command");
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("get day command transmission successful.");
+                            document.getElementById("systemDay").value = xhr.responseText;
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                }
+                xhr.open('GET', ('/day/' + "g"));
+                xhr.send();
+            }
+
+            function getLocalTime()
+            {
+                console.log("Sending get local time command");
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("get local time command transmission successful.");
+                            document.getElementById("systemTime").value = xhr.responseText;
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                }
+                xhr.open('GET', ('/time/' + "g"));
+                xhr.send();
+            }
+
+            document.getElementById("changeTime").addEventListener("click", function () {
+                var newTime = document.getElementById("systemTime").value;
+                console.log("Sending set local time command");
+                console.log("Request time: " + newTime);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("set local time command transmission successful.");
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                }
+                xhr.open('GET', ('/time/' + "s" + newTime));
+                xhr.send();
+            });
+
+            document.getElementById("reset").addEventListener("click", function () {
+                console.log("Sending reset day command");
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            console.log("reset day command transmission successful.");
+                            document.getElementById("systemDay").value = '0';
+                        } else {
+                            console.log('AJAX request failed with status ' + xhr.status);
+                        }
+                    }
+                }
+                xhr.open('GET', ('/day/' + "s"));
+                xhr.send();
+            });
+        </script>
+    </body>
+</html>
