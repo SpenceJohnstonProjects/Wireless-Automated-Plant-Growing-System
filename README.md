@@ -28,7 +28,7 @@ The power hub switches high powered peripheral using relays. It also updates the
 ![PowerHub_pinout_resize](https://github.com/SpenceJohnstonProjects/Wireless-Automated-Plant-Growing-System/assets/118693339/8597f773-141f-4d66-a60f-694ec53b86cd)
 <br>*Figure 5: Power Hub Pinout*
 # Sensor Hub
-The sensor hub collect environmental information from sensors and sends this to the communication hub.<br><br>
+The sensor hub collects environmental information from sensors and sends this to the communication hub.<br><br>
 ![sensorHub_UML_resize](https://github.com/SpenceJohnstonProjects/Wireless-Automated-Plant-Growing-System/assets/118693339/ecd14247-03e0-436a-b906-472161281fc6)
 <br>*Figure 6: Sensor Hub Flow Chart* <br> <br>
 ![sensorHub_pinout_resize](https://github.com/SpenceJohnstonProjects/Wireless-Automated-Plant-Growing-System/assets/118693339/1cc6147c-627a-4456-a888-423d1d05aea0)
